@@ -40,9 +40,9 @@ main( int argc, char *argv[])
    
    int nx,ny,nz,ngrid;
    
-   nx = 255;
-   ny = 255;
-   nz = 255;   
+   nx = 10;
+   ny = 10;
+   nz = 10;   
  
    while (arg_index < argc)
    {
@@ -87,9 +87,9 @@ main( int argc, char *argv[])
    ngrid = nx*ny*nz;
    printf("\n +++++++++++++ (nx,ny,nz) = (%d,%d,%d)  ngrid = %d +++++++++++\n\n",nx,ny,nz,ngrid);
 
-   MatFile = "../input/mat_";
-   RhsFile = "../input/rhs_";
-   SolFile = "../input/sol_"; 
+   MatFile = "./mat_";
+   RhsFile = "./rhs_";
+   SolFile = "./sol_"; 
 
   /*-----------------------------------------------------
    * construct a linear system
@@ -104,20 +104,20 @@ main( int argc, char *argv[])
       printf("\n >>> total time: %.3f seconds\n\n",mytime(tStart,tEnd));       
    }   
 
-   sprintf(filename, "%s%dX%dX%d",MatFile,nx,ny,nz);
+   sprintf(filename, "%s%dX%dX%d.dat",MatFile,nx,ny,nz);
    fsls_Band2CSRMatrix(A, &Acsr);
    fsls_CSRMatrixPrint(Acsr,filename);
    
-   sprintf(filename, "%s%dX%dX%d",RhsFile,nx,ny,nz);
+   sprintf(filename, "%s%dX%dX%d.dat",RhsFile,nx,ny,nz);
    fsls_XVectorPrint(b, filename);
    
-   sprintf(filename, "%s%dX%dX%d",SolFile,nx,ny,nz);
+   sprintf(filename, "%s%dX%dX%d.dat",SolFile,nx,ny,nz);
    fsls_XVectorPrint(u, filename);
 
   /*------------------------------------------------------
    * added for Chensong's SAMG-testing
    *-----------------------------------------------------*/
-   fsls_WriteSAMGData(Acsr, b, u);
+   // fsls_WriteSAMGData(Acsr, b, u);
    
   /*------------------------------------------------------
    * free some staff

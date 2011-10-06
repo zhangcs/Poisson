@@ -22,10 +22,10 @@ OBJS2D =  5pt2d.o fsls.o
 
 OBJS3D =  7pt3d.o fsls.o
 	
-2d5pt : ${OBJS2D}
+2d : ${OBJS2D}
 	${mycc} -o 5pt ${OBJS2D} -lm 
 	
-3d7pt : ${OBJS3D}
+3d : ${OBJS3D}
 	${mycc} -o 7pt ${OBJS3D} -lm
 
 clean :
