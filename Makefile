@@ -6,7 +6,7 @@ mycc = gcc
 C_COMPILE_FLAGS = -O3 -g -Wall
 F_COMPILE_FLAGS = -O3 -g -Wall
 
-CFLAGS = ${C_COMPILE_FLAGS} -lm
+CFLAGS = ${C_COMPILE_FLAGS} 
 FFLAGS = ${F_COMPILE_FLAGS}
 
 .c.o:
@@ -23,10 +23,10 @@ OBJS2D =  5pt2d.o fsls.o
 OBJS3D =  7pt3d.o fsls.o
 	
 2d : ${OBJS2D}
-	${mycc} -o 5pt ${OBJS2D} -lm 
+	${mycc} -o 5pt ${OBJS2D} -lm -llapack
 	
 3d : ${OBJS3D}
-	${mycc} -o 7pt ${OBJS3D} -lm
+	${mycc} -o 7pt ${OBJS3D} -lm -llapack
 
 clean :
 	-rm -f *.o

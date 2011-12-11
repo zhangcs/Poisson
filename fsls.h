@@ -116,7 +116,8 @@ int fsls_XVectorSetConstantValues( fsls_XVector *vector, double value );
 int fsls_XVectorDestroy( fsls_XVector *vector );
 
 void 
-fsls_BuildLinearSystem_5pt2d( int               nx, 
+fsls_BuildLinearSystem_5pt2d( int								nt,
+															int               nx, 
                               int               ny,
                               fsls_BandMatrix **A_ptr, 
                               fsls_XVector    **f_ptr,
@@ -139,4 +140,10 @@ int fsls_CSRMatrixDestroy( fsls_CSRMatrix *matrix );
 fsls_CSRMatrix *fsls_CSRMatrixDeleteZeros( fsls_CSRMatrix *A, double tol );  
 int fsls_WriteSAMGData( fsls_CSRMatrix *A, fsls_XVector *b, fsls_XVector *u ); // newly added 2010/08/23
 
+//newly added 2011/12/11 by feiteng
+int fsls_CSR2FullMatrix( fsls_CSRMatrix *A, double **full_ptr);
+int fsls_dtMatrix(double dt, int n_rows, int n_cols, double *A_full);
 
+//lapack routine, need liblapack.so
+extern void dgetrf_(int*, int*, double*, int*, int*, int*);
+extern void dgetrs_(char*, int*, int*, double*, int*, int*, double*, int*, int*);

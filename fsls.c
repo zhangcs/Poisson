@@ -50,7 +50,8 @@
  * \date 2010/07/14   
  */   
 void 
-fsls_BuildLinearSystem_5pt2d( int               nx, 
+fsls_BuildLinearSystem_5pt2d( int								nt,
+															int               nx, 
                               int               ny,
                               fsls_BandMatrix **A_ptr, 
                               fsls_XVector    **f_ptr,
@@ -61,6 +62,7 @@ fsls_BuildLinearSystem_5pt2d( int               nx,
     fsls_XVector    *u = NULL;  
     
     int      ngrid   = nx*ny;
+		int      ngridxt = nx*ny*nt;
     int      nband   = 8;
     
     int     *offset  = NULL;
@@ -77,8 +79,8 @@ fsls_BuildLinearSystem_5pt2d( int               nx,
     int      ngridminus1  = ngrid - 1;
     int      ngridminusnx = ngrid - nx;
     
-    int      i,j,k;
-    double   hx,hy,x,y,s;
+    int      i,j,k,m;
+    double   hx,hy,ht,x,y,s,t;
     double   hx2,hy2;
     double   dd;
     double   factorx  = 0.0;
@@ -107,6 +109,7 @@ fsls_BuildLinearSystem_5pt2d( int               nx,
 
     hx  = 1.0 / (double)nxplus1;
     hy  = 1.0 / (double)nyplus1;
+		ht  = 1.0 / (double)nt;
     hx2 = hx*hx;
     hy2 = hy*hy;
     factorx = 1.0 / hx2;
@@ -154,24 +157,30 @@ fsls_BuildLinearSystem_5pt2d( int               nx,
 
 
     // generate the rhs and sol vector
-    f = fsls_XVectorCreate(ngrid);
+    f = fsls_XVectorCreate(ngridxt);
     fsls_XVectorInitialize(f);
-    u = fsls_XVectorCreate(ngrid);
+    u = fsls_XVectorCreate(ngridxt);
     fsls_XVectorInitialize(u);
     f_data = fsls_XVectorData(f);
     u_data = fsls_XVectorData(u); 
     
     k = 0;
-    for (j = 0; j < ny; j ++)
+		double tmp;
+    for (m = 0; m < nt; m ++)
     {
-        y = hy*(j + 1);
-        s = sin(PI*y);
-        for (i = 0; i < nx; i ++)
+        t = ht*(m + 1);
+        for (j = 0; j < ny; j ++)
         {
-            x = hx*(i + 1);
-            u_data[k] = s*sin(PI*x);
-            f_data[k] = constant*u_data[k];
-            k ++;
+            y = hy*(j + 1);
+						s = sin(PI*y);
+						for (i = 0; i < nx; i ++)
+						{
+							x = hx*(i + 1);
+							tmp = s*sin(PI*x);
+							u_data[k] = tmp*t;
+							f_data[k] = tmp + constant*u_data[k];
+							k ++;
+						}
         }
     }
 
@@ -1042,8 +1051,45 @@ fsls_WriteSAMGData( fsls_CSRMatrix *A, fsls_XVector *b, fsls_XVector *u )
    return ierr;
 }
 
+int fsls_CSR2FullMatrix( fsls_CSRMatrix *A, double **full_ptr)
+{
+	int ierr = 0, row = 0, col = 0, i;
+	int num_rows = fsls_CSRMatrixNumRows(A);
+	int num_cols = fsls_CSRMatrixNumCols(A);
+	int *matrix_i = fsls_CSRMatrixI(A);
+	int *matrix_j = fsls_CSRMatrixJ(A);
+	double *matrix_data = fsls_CSRMatrixData(A);
+	int nnz = fsls_CSRMatrixNumNonzeros(A);
+	double *full_A = fsls_CTAlloc(double, num_rows*num_cols);
+	memset(full_A, 0X0, num_rows*num_cols*sizeof(double));
+	for (i = 0; i < nnz; ++i)
+	{
+		if (i==matrix_i[row+1])
+			row = row+1;
+		col = matrix_j[i];
+		full_A[row+num_cols*col]=matrix_data[i];
+	}
+	*full_ptr = full_A;
+	return ierr;
+}
 
-
-
-
+int fsls_dtMatrix(double dt, int n_rows, int n_cols, double *A_full)
+{
+	int ierr = 0;
+	if(n_rows != n_cols)
+		printf("...\n");
+	int i,j;
+	for( i = 0; i < n_rows; ++i )
+	{
+		for( j = 0; j < n_cols; ++j )
+		{
+			A_full[i+n_cols*j] *= dt;
+		}
+	}
+	for( i = 0; i < n_rows; ++i )
+	{
+		A_full[i+n_cols*i] += 1;
+	}
+	return ierr;
+}
 
