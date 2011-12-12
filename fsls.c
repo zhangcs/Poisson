@@ -1,21 +1,27 @@
 #include "fsls.h"
 
 /*!
- * \fn void fsls_BuildLinearSystem_5pt2d
- * \brief Generate the coefficient matrix, right hand side vector and
- *        true solution vector for the following Possion Problem
+ * @brief Generate the coefficient matrix, right hand side vector and
+ *        true solution vector for the following Poisson Problem
 
- *     Consider a two-dimensional Possion equation
+ *     Consider a two-dimensional Poisson equation
+ * \f[
+ *    \frac{du}{dt}-u_{xx}-u_{yy} = f(x,y)\ \ in\ \Omega = (0,1)\times(0,1)
+ * \f]
+ * \f[
+ *                 u(x,y,0) = 0\ \ \ \ \ \ in\ \Omega = (0,1)\times(0,1)  
+ * \f]
+ * \f[
+ *                        u = 0\ \ \ \ \ \ \ \ \ on\  \partial\Omega
+ * \f]
  *
- *          / -u_{xx}-u_{yy} = f(x,y)     in \Omega = (0,1)X(0,1)
- *          \  u = 0                      on \partial\Omega
- *
- *  where f(x,y) = 2*pi^2*sin(pi*x)*sin(pi*y), 
+ *  where f(x,y,t) = \f$2*\pi^2*sin(\pi*x)*sin(\pi*y)*t + sin(\pi*x)*sin(\pi*y)\f$, 
  *  and the solution function can be expressed by
  * 
- *             u(x,y) = sin(pi*x)*sin(pi*y)
+ *             \f$u(x,y,t) = sin(pi*x)*sin(pi*y)*t\f$
  *
  *  Grid: nx = 6; ny = 6
+ *
  *           y
  *           |
  *           |_________________________________________________(1,1)
@@ -41,17 +47,19 @@
  *           |      |      |      |      |      |      |      |
  *     (0,0) |______|______|______|______|______|______|______|_______x  
  *
- * \param nx number of nodes in x-direction (excluding the boundary nodes)
- * \param ny number of nodes in y-direction (excluding the boundary nodes)
- * \param A_ptr pointer to pointer to the coefficient matrix
- * \param f_ptr pointer to pointer to the right hand side vector
- * \param u_ptr pointer to pointer to the true solution vector
- * \author peghoty
- * \date 2010/07/14   
+ * @param nt number of nodes in t-direction, if nt == 0, it turn to be the normal poisson system
+ * @param nx number of nodes in x-direction (excluding the boundary nodes)
+ * @param ny number of nodes in y-direction (excluding the boundary nodes)
+ * @param A_ptr pointer to pointer to the coefficient matrix
+ * @param f_ptr pointer to pointer to the right hand side vector
+ * @param u_ptr pointer to pointer to the true solution vector
+ * @author peghoty
+ * @date 2010/07/14   
+ * 
  */   
 void 
 fsls_BuildLinearSystem_5pt2d( int								nt,
-															int               nx, 
+                              int               nx,
                               int               ny,
                               fsls_BandMatrix **A_ptr, 
                               fsls_XVector    **f_ptr,
@@ -62,8 +70,9 @@ fsls_BuildLinearSystem_5pt2d( int								nt,
     fsls_XVector    *u = NULL;  
     
     int      ngrid   = nx*ny;
-		int      ngridxt = nx*ny*nt;
+		int      ngridxt = ngrid*nt;
     int      nband   = 8;
+		int      nt_flag = 1;
     
     int     *offset  = NULL;
     double  *diag    = NULL;
@@ -106,6 +115,13 @@ fsls_BuildLinearSystem_5pt2d( int								nt,
     offset[7] =  nxplus1;
 
     /* Generate matrix without BC processing */
+
+		if (nt == 0)
+		{
+			ngridxt = ngrid;
+			nt = 1;
+			nt_flag = 0;
+		}
 
     hx  = 1.0 / (double)nxplus1;
     hy  = 1.0 / (double)nyplus1;
@@ -178,7 +194,7 @@ fsls_BuildLinearSystem_5pt2d( int								nt,
 							x = hx*(i + 1);
 							tmp = s*sin(PI*x);
 							u_data[k] = tmp*t;
-							f_data[k] = tmp + constant*u_data[k];
+							f_data[k] = tmp*nt_flag + constant*u_data[k];
 							k ++;
 						}
         }
@@ -190,31 +206,39 @@ fsls_BuildLinearSystem_5pt2d( int								nt,
 }
 
 /*!
- * \fn void fsls_BuildLinearSystem_7pt3d
- * \brief Generate the coefficient matrix, right hand side vector and
- *        true solution vector for the following Possion Problem
+ * @brief Generate the coefficient matrix, right hand side vector and
+ *        true solution vector for the following Poisson Problem
 
- *     Consider a three-dimensional Possion equation
+ *     Consider a three-dimensional Poisson equation
  *
- *          / -u_{xx}-u_{yy}-u_{zz} = f(x,y,z)     in \Omega = (0,1)X(0,1)X(0,1)
- *          \  u = 0                               on \partial\Omega
+ * \f[
+ *   \frac{du}{dt}-u_{xx}-u_{yy}-u_{zz} = f(x,y,t)\ \ in\ \Omega = (0,1)\times(0,1)\times(0,1)
+ * \f]
+ * \f[
+ *                 u(x,y,z,0) = 0\ \ \ \ \ \ in\ \Omega  
+ * \f]
+ * \f[
+ *                        u = 0\ \ \ \ \ \ \ \ \ on\  \partial\Omega
+ * \f]
  *
- *  where f(x,y,z) = 3*pi*pi*sin(pi*x)*sin(pi*y)*sin(pi*z), 
+ *  where f(x,y,z,t) = \f$3*\pi^2*u(x,y,z,t) + sin(\pi*x)*sin(\pi*y)*sin(\pi*z)\f$, 
  *  and the solution function can be expressed by
  * 
- *             u(x,y,z) = sin(pi*x)*sin(pi*y)*sin(pi*z)
+ *             \f$u(x,y,z,t) = sin(\pi*x)*sin(\pi*y)*sin(\pi*z)\f$
  *
- * \param nx number of nodes in x-direction (excluding the boundary nodes)
- * \param ny number of nodes in y-direction (excluding the boundary nodes)
- * \param nz number of nodes in z-direction (excluding the boundary nodes) 
- * \param A_ptr pointer to pointer to the coefficient matrix
- * \param f_ptr pointer to pointer to the right hand side vector
- * \param u_ptr pointer to pointer to the true solution vector
- * \author peghoty
- * \date 2010/08/05   
+ * @param nt number of nodes in t-direction, if nt == 0, it turn to be the normal poisson system
+ * @param nx number of nodes in x-direction (excluding the boundary nodes)
+ * @param ny number of nodes in y-direction (excluding the boundary nodes)
+ * @param nz number of nodes in z-direction (excluding the boundary nodes) 
+ * @param A_ptr pointer to pointer to the coefficient matrix
+ * @param f_ptr pointer to pointer to the right hand side vector
+ * @param u_ptr pointer to pointer to the true solution vector
+ * @author peghoty
+ * @date 2010/08/05   
  */   
 void 
-fsls_BuildLinearSystem_7pt3d( int               nx, 
+fsls_BuildLinearSystem_7pt3d( int               nt, 
+                              int               nx,
                               int               ny,
                               int               nz,
                               fsls_BandMatrix **A_ptr, 
@@ -226,8 +250,10 @@ fsls_BuildLinearSystem_7pt3d( int               nx,
     fsls_XVector    *u = NULL;
     
     int      ngrid   = nx*ny*nz;
+		int      ngridxt = ngrid*nt;
     int      nplane  = nx*ny;
     int      nband   = 6;
+		int      nt_flag = 1;
     
     int     *offset  = NULL;
     double  *diag    = NULL;
@@ -236,9 +262,9 @@ fsls_BuildLinearSystem_7pt3d( int               nx,
     double  *f_data  = NULL;
     double  *u_data  = NULL;
     
-    int      i,j,k,cnt;
-    double   x,y,z;
-    double   hx,hy,hz,s,ss;
+    int      i,j,k,cnt,m;
+    double   x,y,z,t;
+    double   hx,hy,hz,ht,s,ss;
     double   hx2,hy2,hz2;
     double   dd;
     
@@ -281,9 +307,17 @@ fsls_BuildLinearSystem_7pt3d( int               nx,
     * Generate matrix without BC processing 
     *--------------------------------------------------*/
 
+		if (nt == 0)
+		{
+			ngridxt = ngrid;
+			nt = 1;
+			nt_flag = 0;
+		}
+
     hx  = 1.0 / (double)nxplus1;
     hy  = 1.0 / (double)nyplus1;
     hz  = 1.0 / (double)nzplus1;
+		ht  = 1.0 / (double)nt;
     
     hx2 = hx*hx;
     hy2 = hy*hy;
@@ -485,31 +519,37 @@ fsls_BuildLinearSystem_7pt3d( int               nx,
     * generate the rhs and sol vector
     *--------------------------------------------------*/
 
-    f = fsls_XVectorCreate(ngrid);
+    f = fsls_XVectorCreate(ngridxt);
     fsls_XVectorInitialize(f);
-    u = fsls_XVectorCreate(ngrid);
+    u = fsls_XVectorCreate(ngridxt);
     fsls_XVectorInitialize(u);
     f_data = fsls_XVectorData(f);
     u_data = fsls_XVectorData(u);
     
     cnt = 0;
-    for (k = 0; k < nz; k ++)
-    {
-        z  = hz*(k + 1);
-        ss = sin(PI*z);
-        for (j = 0; j < ny; j ++)
-        {
-            y = hy*(j + 1);
-            s = ss*sin(PI*y);
-            for (i = 0; i < nx; i ++)
-            {
-                x = hx*(i + 1);
-                u_data[cnt] = s*sin(PI*x);
-                f_data[cnt] = constant*u_data[cnt];
-                cnt ++;
-            }
-        }
-    }
+		double tmp;
+		for (m = 0; m < nt; m ++)
+		{
+			t = ht*(m + 1);
+			for (k = 0; k < nz; k ++)
+			{
+				z = hz*(k + 1);
+				ss = sin(PI*z);
+				for (j = 0; j < ny; j ++)
+				{
+					y = hy*(j + 1);
+					s = ss*sin(PI*y);
+					for (i = 0; i < nx; i ++)
+					{
+						x = hx*(i + 1);
+						tmp = s*sin(PI*x); 
+						u_data[cnt] = tmp*t;
+						f_data[cnt] = tmp*nt_flag + constant*u_data[cnt];
+						cnt ++;
+					}
+				}
+			}
+		}
 
     *A_ptr = A;
     *f_ptr = f;

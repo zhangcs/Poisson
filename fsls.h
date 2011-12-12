@@ -1,3 +1,6 @@
+#ifndef _FSLS_HEADER_
+#define _FSLS_HEADER_ 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -60,20 +63,27 @@ typedef struct
 
 typedef struct
 {
-   int      n;         // order of the matrix
-   int      nx;        // number of nodes along x-direction(excluding boundary nodes)
-   int      ny;	       // number of nodes along y-direction(excluding boundary nodes)
-   int      nz;        // number of nodes along z-direction(excluding boundary nodes)
-   int      nband;     // the number of offdiagonal bands
+   int      n;	/**< @brief order of the matrix */
+   int      nx; /**< @brief number of nodes along x-direction(excluding boundary nodes) */
+	 int      ny; /**< @brief number of nodes along y-direction(excluding boundary nodes) */
+	 int      nz; /**< @brief number of nodes along z-direction(excluding boundary nodes) */
+   int      nband; /**< @brief the number of offdiagonal bands */
    
-   int     *offsets;   // offsets of the offdiagonal bands (length is nband), offsets are 
-                       // ordered in the ascendling manner, the negative and positive values
-                       // corresband to lower left bands and upper right bands, respectively  
-                     
-   double  *diag;      // diagonal entries (length is n)
-   double **offdiag;   // off-diagonal entries (dimension is nband X n), 
-                       // offdiag[i][j],i=0(1)nband-1,j=0(1)n-1: the j-th entry on the i-th offdiagonal band.
-   double  *data_ext;  // data part, including diag_ext and offdiag_ext                    
+	 /**
+		* @brief offsets of the offdiagonal bands (length is nband),
+		* 
+		* offsets are ordered in the ascendling manner, the negative and positive values
+		* corresband to lower left bands and upper right bands, respectively
+		*/
+   int     *offsets;
+   double  *diag; /**< @brief diagonal entries (length is n) */
+	 /**
+		* @brief off-diagonal entries (dimension is nband X n),
+		* 
+		* offdiag[i][j],i=0(1)nband-1,j=0(1)n-1: the j-th entry on the i-th offdiagonal band.
+		*/
+	 double **offdiag;
+	 double  *data_ext; /**< @brief data part, including diag_ext and offdiag_ext */
    
 } fsls_BandMatrix;
 
@@ -89,9 +99,9 @@ typedef struct
 
 typedef struct
 {
-   int      size;     // length of the vector	                       
-   double  *data;     // data of the vector (length is size)
-   double  *data_ext; // data part, including extended data
+   int      size;     /**< @brief length of the vector  */
+   double  *data;     /**< @brief data of the vector (length is size) */
+   double  *data_ext; /**< @brief data part, including extended data */
    
 } fsls_XVector;
 
@@ -116,14 +126,15 @@ int fsls_XVectorSetConstantValues( fsls_XVector *vector, double value );
 int fsls_XVectorDestroy( fsls_XVector *vector );
 
 void 
-fsls_BuildLinearSystem_5pt2d( int								nt,
-															int               nx, 
+fsls_BuildLinearSystem_5pt2d( int               nt,
+                              int               nx,
                               int               ny,
                               fsls_BandMatrix **A_ptr, 
                               fsls_XVector    **f_ptr,
                               fsls_XVector    **u_ptr );
 void 
-fsls_BuildLinearSystem_7pt3d( int               nx, 
+fsls_BuildLinearSystem_7pt3d( int               nt, 
+                              int               nx,
                               int               ny,
                               int               nz,
                               fsls_BandMatrix **A_ptr, 
@@ -141,9 +152,25 @@ fsls_CSRMatrix *fsls_CSRMatrixDeleteZeros( fsls_CSRMatrix *A, double tol );
 int fsls_WriteSAMGData( fsls_CSRMatrix *A, fsls_XVector *b, fsls_XVector *u ); // newly added 2010/08/23
 
 //newly added 2011/12/11 by feiteng
+/**
+ * @brief csr matrix to full matrix,
+ * 
+ * lapack routine need full matrix, newly added 2011/12/11 by feiteng
+ */
 int fsls_CSR2FullMatrix( fsls_CSRMatrix *A, double **full_ptr);
+/**
+ * @brief matrix of (-lap)_h to (I - dt*lap)_h
+ * 
+ * the matrix of time-dependent poisson equation would not change at each time step, newly added 2011/12/11 by feiteng
+ */
 int fsls_dtMatrix(double dt, int n_rows, int n_cols, double *A_full);
 
-//lapack routine, need liblapack.so
+/**
+ * @brief lapack routine, need liblapack.so,
+ *
+ * newly added 2011/12/11 by feiteng
+ */
 extern void dgetrf_(int*, int*, double*, int*, int*, int*);
 extern void dgetrs_(char*, int*, int*, double*, int*, int*, double*, int*, int*);
+
+#endif

@@ -1,16 +1,22 @@
-/*
+/**
  *  This is a program to generate linear system for 2D Possion Problem.
  *
  *     Consider a two-dimensional Possion equation
  *
- *          /du/dt-u_{xx}-u_{yy} = f(x,y,t) in [0,1] X \Omega = (0,1)X(0,1)
- *          |          u_(x,y,0) = 0        in \Omega
- *          \                  u = 0        on (0,1] X \partial\Omega
+ * \f[
+ *   \frac{du}{dt}-u_{xx}-u_{yy} = f(x,y,t)\ \ in\ \Omega = (0,1)\times(0,1)
+ * \f]
+ * \f[
+ *                 u(x,y,0) = 0\ \ \ \ \ \ in\ \Omega = (0,1)\times(0,1)  
+ * \f]
+ * \f[
+ *                        u = 0\ \ \ \ \ \ \ \ \ on\  \partial\Omega
+ * \f]
  *
- *  where f(x,y,t) = 2*pi^2*sin(pi*x)*sin(pi*y)*t + sin(pi*x)*sin(pi*y),
+ *  where f(x,y,t) = \f$2*\pi^2*sin(\pi*x)*sin(\pi*y)*t + sin(\pi*x)*sin(\pi*y)\f$,
  *  and the solution function can be expressed by
  * 
- *             u(x,y,t) = sin(pi*x)*sin(pi*y)*t
+ *             \f$u(x,y,t) = sin(pi*x)*sin(pi*y)*t\f$
  *
  *  Created by peghoty 2010/08/04
  *
@@ -44,7 +50,6 @@ main( int argc, char *argv[])
    nx = 10;
    ny = 10;
 	 nt = 20;
-	 double dt = 1./nt;
  
    while (arg_index < argc)
    {
@@ -87,6 +92,11 @@ main( int argc, char *argv[])
    }
    
    ngrid = nx*ny;
+	 double dt = 0.;
+	 if (nt != 0)
+	 {
+		 dt = 1./nt;
+	 }
    printf("\n +++++++++++++ (nx,ny,nt) = (%d,%d,%d)  ngrid = %d +++++++++++\n\n",nx,ny,nt,ngrid);
 
    MatFile = "./mat_";
@@ -108,12 +118,18 @@ main( int argc, char *argv[])
 
    sprintf(filename, "%s%dX%d.dat",MatFile,nx,ny);
    fsls_Band2CSRMatrix(A, &Acsr);
-	 //newly added 2011/12/11 by feiteng,use lapack routine as solver
+	 /**
+		* the newly added codes aim to use lapack routine to solve the 
+		* linear system, 2011/12/11 by feiteng
+		*/
 	 double *A_full = NULL, *B = NULL;
 	 int LDA, LDB, NRHS = 1;
 	 int *IPIV, INFO[1];
 	 fsls_CSR2FullMatrix(Acsr, &A_full);
-	 fsls_dtMatrix(dt, ngrid, ngrid, A_full);
+	 if (nt != 0)
+	 {
+		 fsls_dtMatrix(dt, ngrid, ngrid, A_full);
+	 }
 
 	 IPIV = ( int *) malloc ( sizeof (int) * ngrid ) ;
 	 if( IPIV == NULL ) {
@@ -126,13 +142,13 @@ main( int argc, char *argv[])
 		 printf("Allocation Error\n");
 		 exit(1);
 	 }
-//	 memcpy(B, fsls_XVectorData(b), sizeof(double) * ngrid);
 	 memset(B, 0X0, ngrid*sizeof(double));
 	 dgetrf_(&ngrid, &ngrid, A_full, &LDA, IPIV, INFO);
+	 double err;
+	 double u_;
 	 for (i = 0;i < nt; ++i)
 	 {
-		 double err = 0.;
-		 double u_ = 0.;
+		 err = u_ = 0.;
 		 for (j = 0;j < ngrid; ++j)
 		 {
 			 B[j] += b->data[i*ngrid+j]*dt;
@@ -143,7 +159,19 @@ main( int argc, char *argv[])
 			 err += (B[j]-u->data[i*ngrid+j])*(B[j]-u->data[i*ngrid+j]);
 			 u_ += (u->data[i*ngrid+j])*(u->data[i*ngrid+j]);
 		 }
-		 printf("...%f\n",err/u_);
+		 printf("...  %1.10f\n",err/u_);
+	 }
+	 if (nt == 0)
+	 {
+		 err = u_ = 0.;
+		 memcpy(B, fsls_XVectorData(b), sizeof(double) * ngrid);
+		 dgetrs_("N", &ngrid, &NRHS, A_full, &LDA, IPIV, B, &LDB, INFO);
+		 for (j = 0;j < ngrid; ++j)
+		 {
+			 err += (B[j]-u->data[i*ngrid+j])*(B[j]-u->data[i*ngrid+j]);
+			 u_ += (u->data[i*ngrid+j])*(u->data[i*ngrid+j]);
+		 }
+		 printf("...  %1.10f\n",err/u_);
 	 }
 
    fsls_CSRMatrixPrint(Acsr,filename);
