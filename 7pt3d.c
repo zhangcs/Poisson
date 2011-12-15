@@ -7,15 +7,15 @@
  *   \frac{du}{dt}-u_{xx}-u_{yy}-u_{zz} = f(x,y,t)\ \ in\ \Omega = (0,1)\times(0,1)\times(0,1)
  * \f]
  * \f[
- *                 u(x,y,z,0) = 0\ \ \ \ \ \ in\ \Omega  
+ *                 u(x,y,z,0) = 0\ \ \ \ \ \ in\ \Omega
  * \f]
  * \f[
  *                        u = 0\ \ \ \ \ \ \ \ \ on\  \partial\Omega
  * \f]
  *
- *  where f(x,y,z,t) = \f$3*\pi^2*u(x,y,z,t) + sin(\pi*x)*sin(\pi*y)*sin(\pi*z)\f$, 
+ *  where f(x,y,z,t) = \f$3*\pi^2*u(x,y,z,t) + sin(\pi*x)*sin(\pi*y)*sin(\pi*z)\f$,
  *  and the solution function can be expressed by
- * 
+ *
  *             \f$u(x,y,z,t) = sin(\pi*x)*sin(\pi*y)*sin(\pi*z)\f$
  *
  *  Created by peghoty 2010/08/04
@@ -27,30 +27,30 @@
 
 #include "fsls.h"
 
-int 
+int
 main( int argc, char *argv[])
 {
 	struct timeval tStart,tEnd;
 	int TTest       = 1;
 	int arg_index   = 0;
-	int print_usage = 0;  
+	int print_usage = 0;
 
 	char *MatFile = NULL;
 	char *RhsFile = NULL;
 	char *SolFile = NULL;
-	char filename[120];  
+	char filename[120];
 
 	fsls_BandMatrix *A    = NULL;
 	fsls_CSRMatrix  *Acsr = NULL;
 	fsls_XVector    *b    = NULL;
-	fsls_XVector    *u    = NULL;  
+	fsls_XVector    *u    = NULL;
 
 	int nx,ny,nz,ngrid,nt,i,j;
     double dt = 0.0;
 
 	nx = 10;
 	ny = 10;
-	nz = 10;   
+	nz = 10;
     nt = 0;
 
 	while (arg_index < argc)
@@ -91,8 +91,8 @@ main( int argc, char *argv[])
 		else
 		{
 			arg_index ++;
-		}         
-	} 
+		}
+	}
 
     if (print_usage)
     {
@@ -112,26 +112,26 @@ main( int argc, char *argv[])
 
 	MatFile = "./mat_";
 	RhsFile = "./rhs_";
-	SolFile = "./sol_"; 
+	SolFile = "./sol_";
 
 	/*-----------------------------------------------------
 	 * construct a linear system
-	 *----------------------------------------------------*/  
-	if (TTest) GetTime(tStart); 
+	 *----------------------------------------------------*/
+	if (TTest) GetTime(tStart);
 
 	fsls_BuildLinearSystem_7pt3d(nt, nx, ny, nz, &A, &b, &u);
 
-	if (TTest) 
+	if (TTest)
 	{
 		GetTime(tEnd);
-		printf("\n >>> total time: %.3f seconds\n\n",mytime(tStart,tEnd));       
-	}   
+		printf("\n >>> total time: %.3f seconds\n\n",mytime(tStart,tEnd));
+	}
 
 	sprintf(filename, "%s%dX%dX%d.dat",MatFile,nx,ny,nz);
 	fsls_Band2CSRMatrix(A, &Acsr);
 
     /**
-     * the newly added codes aim to prepare for lapack 
+     * the newly added codes aim to prepare for lapack
      * 2011/12/11 by feiteng
      */
 	double *A_full = NULL, *B = NULL;
@@ -160,9 +160,9 @@ main( int argc, char *argv[])
 	dgetrf_(&ngrid, &ngrid, A_full, &LDA, IPIV, INFO);
 
     /**
-     * the newly added codes aim to use lapack routine to solve the 
+     * the newly added codes aim to use lapack routine to solve the
      * linear system, 2011/12/11 by feiteng
-     */    
+     */
 	double err;
 	double u_;
 
@@ -211,7 +211,7 @@ main( int argc, char *argv[])
 
 	/*------------------------------------------------------
 	 * free some staff
-	 *-----------------------------------------------------*/   
+	 *-----------------------------------------------------*/
 	fsls_BandMatrixDestroy(A);
 	fsls_CSRMatrixDestroy(Acsr);
 	fsls_XVectorDestroy(b);

@@ -1,5 +1,5 @@
 #ifndef _FSLS_HEADER_
-#define _FSLS_HEADER_ 
+#define _FSLS_HEADER_
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,7 +59,7 @@ typedef struct
 #define fsls_VectorNumVectors(vector)            ((vector) -> num_vectors)
 #define fsls_VectorMultiVecStorageMethod(vector) ((vector) -> multivec_storage_method)
 #define fsls_VectorVectorStride(vector)          ((vector) -> vecstride )
-#define fsls_VectorIndexStride(vector)           ((vector) -> idxstride )  
+#define fsls_VectorIndexStride(vector)           ((vector) -> idxstride )
 
 typedef struct
 {
@@ -68,10 +68,10 @@ typedef struct
 	 int      ny; /**< @brief number of nodes along y-direction(excluding boundary nodes) */
 	 int      nz; /**< @brief number of nodes along z-direction(excluding boundary nodes) */
    int      nband; /**< @brief the number of offdiagonal bands */
-   
+
 	 /**
 		* @brief offsets of the offdiagonal bands (length is nband),
-		* 
+		*
 		* offsets are ordered in the ascendling manner, the negative and positive values
 		* corresband to lower left bands and upper right bands, respectively
 		*/
@@ -79,12 +79,12 @@ typedef struct
    double  *diag; /**< @brief diagonal entries (length is n) */
 	 /**
 		* @brief off-diagonal entries (dimension is nband X n),
-		* 
+		*
 		* offdiag[i][j],i=0(1)nband-1,j=0(1)n-1: the j-th entry on the i-th offdiagonal band.
 		*/
 	 double **offdiag;
 	 double  *data_ext; /**< @brief data part, including diag_ext and offdiag_ext */
-   
+
 } fsls_BandMatrix;
 
 #define fsls_BandMatrixN(matrix)         ((matrix) -> n)
@@ -102,7 +102,7 @@ typedef struct
    int      size;     /**< @brief length of the vector  */
    double  *data;     /**< @brief data of the vector (length is size) */
    double  *data_ext; /**< @brief data part, including extended data */
-   
+
 } fsls_XVector;
 
 #define fsls_XVectorSize(vector)     ((vector) -> size)
@@ -133,34 +133,41 @@ fsls_BuildLinearSystem_5pt2d( int               nt,
                               fsls_XVector    **f_ptr,
                               fsls_XVector    **u_ptr );
 void 
-fsls_BuildLinearSystem_7pt3d( int               nt, 
+fsls_BuildLinearSystem_5pt2d_rb( int               nt,
+                              int               nx,
+                              int               ny,
+                              fsls_BandMatrix **A_ptr, 
+                              fsls_XVector    **f_ptr,
+                              fsls_XVector    **u_ptr );
+void 
+fsls_BuildLinearSystem_7pt3d( int               nt,
                               int               nx,
                               int               ny,
                               int               nz,
                               fsls_BandMatrix **A_ptr, 
                               fsls_XVector    **f_ptr,
-                              fsls_XVector    **u_ptr ); 
+                              fsls_XVector    **u_ptr );
 
 
 
 int fsls_Band2CSRMatrix( fsls_BandMatrix *B, fsls_CSRMatrix **A_ptr );
 int fsls_CSRMatrixPrint( fsls_CSRMatrix *matrix, char *file_name );
 fsls_CSRMatrix *fsls_CSRMatrixCreate( int num_rows,int num_cols,int num_nonzeros );
-int fsls_CSRMatrixInitialize( fsls_CSRMatrix *matrix ); 
-int fsls_CSRMatrixDestroy( fsls_CSRMatrix *matrix );  
-fsls_CSRMatrix *fsls_CSRMatrixDeleteZeros( fsls_CSRMatrix *A, double tol );  
+int fsls_CSRMatrixInitialize( fsls_CSRMatrix *matrix );
+int fsls_CSRMatrixDestroy( fsls_CSRMatrix *matrix );
+fsls_CSRMatrix *fsls_CSRMatrixDeleteZeros( fsls_CSRMatrix *A, double tol );
 int fsls_WriteSAMGData( fsls_CSRMatrix *A, fsls_XVector *b, fsls_XVector *u ); // newly added 2010/08/23
 
 //newly added 2011/12/11 by feiteng
 /**
  * @brief csr matrix to full matrix,
- * 
+ *
  * lapack routine need full matrix, newly added 2011/12/11 by feiteng
  */
 int fsls_CSR2FullMatrix( fsls_CSRMatrix *A, double **full_ptr);
 /**
  * @brief matrix of (-lap)_h to (I - dt*lap)_h
- * 
+ *
  * the matrix of time-dependent poisson equation would not change at each time step, newly added 2011/12/11 by feiteng
  */
 int fsls_dtMatrix(double dt, int n_rows, int n_cols, double *A_full);
