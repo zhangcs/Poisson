@@ -30,7 +30,7 @@ main( int argc, char *argv[])
 {
     struct timeval tStart,tEnd;
     int TTest       = 1;
-    int arg_index   = 0;
+    int arg_index   = 1;
     int print_usage = 0;
 
     char *MatFile = NULL;
@@ -46,6 +46,7 @@ main( int argc, char *argv[])
     int nx,ny,ngrid,nt,i,j;
     double dt = 0.0;
 		int rb = 1;
+		int test = 0;
 
     nx = 11;
     ny = 11;
@@ -77,7 +78,14 @@ main( int argc, char *argv[])
 				if ( strcmp(argv[arg_index], "-rb") == 0 )
 				{
 						arg_index ++;
-						rb = 0;
+            rb = atoi(argv[arg_index++]);
+				}
+        if (arg_index >= argc) break;
+
+				if ( strcmp(argv[arg_index], "-test") == 0 )
+				{
+						arg_index ++;
+            test = atoi(argv[arg_index++]);
 				}
         if (arg_index >= argc) break;
 
@@ -86,19 +94,16 @@ main( int argc, char *argv[])
             print_usage = 1;
             break;
         }
-        else
-        {
-            arg_index ++;
-        }
     }
 
     if (print_usage)
     {
         printf("\n  Usage: %s [<options>]\n\n", argv[0]);
-        printf("  -nx <val> : number of interier nodes in x-direction [default: 11]\n");
-        printf("  -ny <val> : number of interier nodes in y-direction [default: 11]\n");
-        printf("  -nt <val> : number of interier nodes in t-direction [default:  0]\n");
-        printf("  -rb       : red-black ordering dof, the \"nx\" and \"ny\" should be odd at present\n");
+        printf("  -nx   <val> : number of interier nodes in x-direction [default: 11]\n");
+        printf("  -ny   <val> : number of interier nodes in y-direction [default: 11]\n");
+        printf("  -nt   <val> : number of interier nodes in t-direction [default:  0]\n");
+        printf("  -rb   <val> : 1->red-black ordering, the \"nx\" and \"ny\" should be odd at present;\n              0->normal ordering                      [default:  1]\n");
+        printf("  -test <val> : 1->lapack routine test for fdm;0->no test for fdm[default:  0]\n");
         printf("  -help     : using help message\n\n");
         exit(1);
     }
@@ -106,7 +111,7 @@ main( int argc, char *argv[])
     ngrid = nx*ny;
     if (nt != 0) dt = 1./nt;
 
-    printf("\n +++++++++++++ (nx,ny,nt) = (%d,%d,%d)  ngrid = %d +++++++++++\n\n",nx,ny,nt,ngrid);
+    printf("\n +++++++++++++ (nx,ny,nt,rb,test) = (%d,%d,%d,%d,%d)  ngrid = %d +++++++++++\n\n",nx,ny,nt,rb,test,ngrid);
 
     MatFile = "./mat_";
     RhsFile = "./rhs_";
@@ -136,22 +141,24 @@ main( int argc, char *argv[])
      */
     double *A_full = NULL, *B = NULL;
     int LDA, LDB, NRHS = 1;
-    int *IPIV, INFO[1];
+    int *IPIV = NULL, INFO[1];
+		if (test)
+		{
     fsls_CSR2FullMatrix(Acsr, &A_full);
+    B = ( double *) malloc ( sizeof(double) * ngrid);
+    IPIV = ( int *) malloc ( sizeof (int) * ngrid ) ;
 
     if (nt != 0)
     {
         fsls_dtMatrix(dt, ngrid, ngrid, A_full);
     }
 
-    IPIV = ( int *) malloc ( sizeof (int) * ngrid ) ;
     if( IPIV == NULL ) {
         printf("Allocation Error\n");
         exit(1);
     }
     LDA = LDB = ngrid;
 
-    B = ( double *) malloc ( sizeof(double) * ngrid);
     if( B == NULL ){
         printf("Allocation Error\n");
         exit(1);
@@ -195,6 +202,7 @@ main( int argc, char *argv[])
         }
         printf("rel err = %e\n", err/u_);
     }
+		}
 
     fsls_CSRMatrixPrint(Acsr,filename);
 
