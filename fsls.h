@@ -7,6 +7,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+
 #define GetTime(a) gettimeofday(&a,NULL)
 #define mytime(a,b) ((b.tv_sec-a.tv_sec) + (float)(b.tv_usec-a.tv_usec)/1000000.0)
 
@@ -15,21 +16,22 @@
 #define fsls_min(a,b)  (((a)<(b)) ? (a) : (b))
 #define fsls_TFree(ptr) ( fsls_Free((char *)ptr), ptr = NULL )
 #define fsls_CTAlloc(type, count) ( (type *)fsls_CAlloc((size_t)(count), (size_t)sizeof(type)) )
+
 void  fsls_Free( char *ptr );
 char *fsls_CAlloc( size_t count, size_t elt_size );
 int   fsls_OutOfMemory( size_t size );
 
 typedef struct
 {
-   double  *data;
-   int     *i;
-   int     *j;
-   int      num_rows;
-   int      num_cols;
-   int      num_nonzeros;
-   int     *rownnz;
-   int      num_rownnz; 
-   int      owns_data;
+	double  *data;
+	int     *i;
+	int     *j;
+	int      num_rows;
+	int      num_cols;
+	int      num_nonzeros;
+	int     *rownnz;
+	int      num_rownnz; 
+	int      owns_data;
 } fsls_CSRMatrix;
 
 #define fsls_CSRMatrixData(matrix)         ((matrix) -> data)
@@ -44,12 +46,12 @@ typedef struct
 
 typedef struct
 {
-   double  *data;
-   int      size;
-   int      owns_data;
-   int      num_vectors;
-   int      multivec_storage_method;
-   int      vecstride, idxstride;
+	double  *data;
+	int      size;
+	int      owns_data;
+	int      num_vectors;
+	int      multivec_storage_method;
+	int      vecstride, idxstride;
 
 } fsls_Vector;
 
@@ -63,27 +65,27 @@ typedef struct
 
 typedef struct
 {
-   int      n;	/**< @brief order of the matrix */
-   int      nx; /**< @brief number of nodes along x-direction(excluding boundary nodes) */
-	 int      ny; /**< @brief number of nodes along y-direction(excluding boundary nodes) */
-	 int      nz; /**< @brief number of nodes along z-direction(excluding boundary nodes) */
-   int      nband; /**< @brief the number of offdiagonal bands */
+	int      n;	/**< @brief order of the matrix */
+	int      nx; /**< @brief number of nodes along x-direction(excluding boundary nodes) */
+	int      ny; /**< @brief number of nodes along y-direction(excluding boundary nodes) */
+	int      nz; /**< @brief number of nodes along z-direction(excluding boundary nodes) */
+	int      nband; /**< @brief the number of offdiagonal bands */
 
-	 /**
-		* @brief offsets of the offdiagonal bands (length is nband),
-		*
-		* offsets are ordered in the ascendling manner, the negative and positive values
-		* corresband to lower left bands and upper right bands, respectively
-		*/
-   int     *offsets;
-   double  *diag; /**< @brief diagonal entries (length is n) */
-	 /**
-		* @brief off-diagonal entries (dimension is nband X n),
-		*
-		* offdiag[i][j],i=0(1)nband-1,j=0(1)n-1: the j-th entry on the i-th offdiagonal band.
-		*/
-	 double **offdiag;
-	 double  *data_ext; /**< @brief data part, including diag_ext and offdiag_ext */
+	/**
+	 * @brief offsets of the offdiagonal bands (length is nband),
+	 *
+	 * offsets are ordered in the ascendling manner, the negative and positive values
+	 * corresband to lower left bands and upper right bands, respectively
+	 */
+	int     *offsets;
+	double  *diag; /**< @brief diagonal entries (length is n) */
+	/**
+	 * @brief off-diagonal entries (dimension is nband X n),
+	 *
+	 * offdiag[i][j],i=0(1)nband-1,j=0(1)n-1: the j-th entry on the i-th offdiagonal band.
+	 */
+	double **offdiag;
+	double  *data_ext; /**< @brief data part, including diag_ext and offdiag_ext */
 
 } fsls_BandMatrix;
 
@@ -99,9 +101,9 @@ typedef struct
 
 typedef struct
 {
-   int      size;     /**< @brief length of the vector  */
-   double  *data;     /**< @brief data of the vector (length is size) */
-   double  *data_ext; /**< @brief data part, including extended data */
+	int      size;     /**< @brief length of the vector  */
+	double  *data;     /**< @brief data of the vector (length is size) */
+	double  *data_ext; /**< @brief data part, including extended data */
 
 } fsls_XVector;
 
@@ -127,26 +129,26 @@ int fsls_XVectorDestroy( fsls_XVector *vector );
 
 void 
 fsls_BuildLinearSystem_5pt2d( int               nt,
-                              int               nx,
-                              int               ny,
-                              fsls_BandMatrix **A_ptr, 
-                              fsls_XVector    **f_ptr,
-                              fsls_XVector    **u_ptr );
+			int               nx,
+			int               ny,
+			fsls_BandMatrix **A_ptr, 
+			fsls_XVector    **f_ptr,
+			fsls_XVector    **u_ptr );
 void 
 fsls_BuildLinearSystem_5pt2d_rb( int               nt,
-                              int               nx,
-                              int               ny,
-                              fsls_BandMatrix **A_ptr, 
-                              fsls_XVector    **f_ptr,
-                              fsls_XVector    **u_ptr );
+			int               nx,
+			int               ny,
+			fsls_BandMatrix **A_ptr, 
+			fsls_XVector    **f_ptr,
+			fsls_XVector    **u_ptr );
 void 
 fsls_BuildLinearSystem_7pt3d( int               nt,
-                              int               nx,
-                              int               ny,
-                              int               nz,
-                              fsls_BandMatrix **A_ptr, 
-                              fsls_XVector    **f_ptr,
-                              fsls_XVector    **u_ptr );
+			int               nx,
+			int               ny,
+			int               nz,
+			fsls_BandMatrix **A_ptr, 
+			fsls_XVector    **f_ptr,
+			fsls_XVector    **u_ptr );
 
 
 
@@ -179,5 +181,4 @@ int fsls_dtMatrix(double dt, int n_rows, int n_cols, double *A_full);
  */
 extern void dgetrf_(int*, int*, double*, int*, int*, int*);
 extern void dgetrs_(char*, int*, int*, double*, int*, int*, double*, int*, int*);
-
 #endif
