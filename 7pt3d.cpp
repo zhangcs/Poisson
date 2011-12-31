@@ -148,7 +148,8 @@ main( int argc, char *argv[])
 	sprintf(filename, "%s%dX%dX%d.dat",MatFile,nx,ny,nz);
 	fsls_Band2CSRMatrix(A, &Acsr);
 	if (rcm)
-		RCM( Acsr, b, u );
+//		RCM( Acsr, b, u );
+		RCM( Acsr, b, u, nt );
 
 	/**
 	 * the newly added codes aim to prepare for lapack

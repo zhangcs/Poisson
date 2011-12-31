@@ -26,6 +26,8 @@ OBJS2D =  5pt2d.o fsls.o rcm.o
 
 OBJS3D =  7pt3d.o fsls.o rcm.o
 	
+default: 2d 3d
+
 2d : ${OBJS2D}
 	${mycpp} -o 5pt ${OBJS2D} -lm -llapack
 	
@@ -36,4 +38,5 @@ clean :
 	-rm -f *.o
 	-rm -f *~
 	-rm -f 5pt 7pt
+	-rm -f *.dat 
 

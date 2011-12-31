@@ -23,6 +23,6 @@
 #include <boost/graph/properties.hpp>
 #include <boost/graph/bandwidth.hpp>
 
-int RCM( fsls_CSRMatrix *A, fsls_XVector *f , fsls_XVector *u);
+int RCM( fsls_CSRMatrix *A, fsls_XVector *f , fsls_XVector *u, int nt);
 
 #endif
