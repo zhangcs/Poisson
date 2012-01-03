@@ -4,7 +4,8 @@ F90C  = gfortran
 mycc  = gcc
 mycpp = g++
 
-C_COMPILE_FLAGS = -O3 -g -Wall
+INCLUDE=./
+C_COMPILE_FLAGS = -O3 -g -Wall -I$(INCLUDE)
 F_COMPILE_FLAGS = -O3 -g -Wall
 
 CFLAGS = ${C_COMPILE_FLAGS} 
