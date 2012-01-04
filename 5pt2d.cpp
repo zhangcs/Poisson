@@ -51,6 +51,7 @@ main( int argc, char *argv[])
 	int rb = 0;
 	int test = 0;
 	int rcm = 0;
+	char* order = "normal";
 
 	nx = 11;
 	ny = 11;
@@ -79,13 +80,6 @@ main( int argc, char *argv[])
 		}
 		if (arg_index >= argc) break;
 
-		if ( strcmp(argv[arg_index], "-rb") == 0 )
-		{
-			arg_index ++;
-			rb = atoi(argv[arg_index++]);
-		}
-		if (arg_index >= argc) break;
-
 		if ( strcmp(argv[arg_index], "-test") == 0 )
 		{
 			arg_index ++;
@@ -93,10 +87,10 @@ main( int argc, char *argv[])
 		}
 		if (arg_index >= argc) break;
 
-		if ( strcmp(argv[arg_index], "-rcm") == 0 )
+		if ( strcmp(argv[arg_index], "-order") == 0 )
 		{
 			arg_index ++;
-			rcm = atoi(argv[arg_index++]);
+			order = argv[arg_index++];
 		}
 		if (arg_index >= argc) break;
 
@@ -110,20 +104,23 @@ main( int argc, char *argv[])
 	if (print_usage)
 	{
 		printf("\n  Usage: %s [<options>]\n\n", argv[0]);
-		printf("  -nx   <val> : number of interier nodes in x-direction [default: 11]\n");
-		printf("  -ny   <val> : number of interier nodes in y-direction [default: 11]\n");
-		printf("  -nt   <val> : number of interier nodes in t-direction [default:  0]\n");
-		printf("  -rb   <val> : 1->red-black ordering, the \"nx\" and \"ny\" should be odd at present;\n              0->normal ordering                      [default:  0]\n");
-		printf("  -test <val> : 1->lapack routine test for fdm;0->no test for fdm[default:  0]\n");
-		printf("  -rcm  <val> : 1->RCM ordering for the d.o.f;0->normal ordering for the d.o.f[default:  0]\n");
-		printf("  -help     : using help message\n\n");
+		printf("  -nx    <val> : number of interier nodes in x-direction [default: 11]\n");
+		printf("  -ny    <val> : number of interier nodes in y-direction [default: 11]\n");
+		printf("  -nt    <val> : number of interier nodes in t-direction [default:  0]\n");
+		printf("  -test  <val> : 1->lapack routine test for fdm;0->no test for fdm[default:  0]\n");
+		printf("  -order <val> : rcm->RCM ordering for the d.o.f;\n		 rb->Red-Black ordering for the d.o.f;[default:  normal]\n");
+		printf("  -help        : using help message\n\n");
 		exit(1);
 	}
+	if ( strcmp(order,"rb") == 0 )
+		rb = 1;
+	if ( strcmp(order,"rcm") == 0 )
+		rcm = 1;
 
 	ngrid = nx*ny;
 	if (nt != 0) dt = 1./nt;
 
-	printf("\n +++++++++++++ (nx,ny,nt,rb,test,rcm) = (%d,%d,%d,%d,%d,%d)  ngrid = %d +++++++++++\n\n",nx,ny,nt,rb,test,rcm,ngrid);
+	printf("\n ++++++++++++ (nx,ny,nt,test,order) = (%d,%d,%d,%d,%s)  ngrid = %d ++++++++++\n\n",nx,ny,nt,test,order,ngrid);
 
 	MatFile = "./mat_";
 	RhsFile = "./rhs_";
