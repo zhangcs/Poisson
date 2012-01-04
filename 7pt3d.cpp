@@ -119,7 +119,7 @@ main( int argc, char *argv[])
 		printf("  -nz    <val> : number of interier nodes in z-direction [default: 10]\n");
 		printf("  -nt    <val> : number of interier nodes in t-direction [default:  0]\n");
 		printf("  -test  <val> : 1->lapack routine test for fdm;0->no test for fdm[default:  0]\n");
-		printf("  -order <val> : rcm->RCM ordering for the d.o.f;\n		 rb->Red-Black ordering for the d.o.f;[default:  normal]\n");
+		printf("  -order <val> : rcm->RCM ordering for the d.o.f[default:  normal]\n");
 		printf("  -help       : using help message\n\n");
 		exit(1);
 	}
