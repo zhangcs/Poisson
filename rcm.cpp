@@ -40,17 +40,16 @@ int RCM( fsls_CSRMatrix *A, fsls_XVector *f, fsls_XVector *u, int nt )
 	typedef graph_traits<Graph>::vertex_descriptor Vertex;
 	typedef graph_traits<Graph>::vertices_size_type size_type;
 
-	typedef std::pair<std::size_t, std::size_t> Pair;
-	Pair edges[nnz];
-//	Pair new_edges[nnz];
+	std::size_t *edges_1 = fsls_CTAlloc(std::size_t, nnz);
+	std::size_t *edges_2 = fsls_CTAlloc(std::size_t, nnz);
 	for (i = 0; i < nnz; ++i)
 	{
 		if (i==matrix_i[row+1])
 			row = row+1;
 		col = matrix_j[i];
 		{
-			edges[j].first  = row;
-			edges[j].second = col;
+			edges_1[j] = row;
+			edges_2[j] = col;
 			j++;
 		}
 	}
@@ -59,7 +58,7 @@ int RCM( fsls_CSRMatrix *A, fsls_XVector *f, fsls_XVector *u, int nt )
 //	Graph new_G(ngrid);
 	for (i = 0; i < nnz; ++i)
 	{
-		add_edge(edges[i].first, edges[i].second, G);
+		add_edge(edges_1[i], edges_2[i], G);
 	}
 	graph_traits<Graph>::vertex_iterator ui, ui_end;
 
@@ -102,9 +101,9 @@ int RCM( fsls_CSRMatrix *A, fsls_XVector *f, fsls_XVector *u, int nt )
 					new_u[i+ngrid*j] = u->data[new_idx[i]+ngrid*j];
 				}
 			}
-			while ( edges[row].first == new_idx[i])
+			while ( edges_1[row] == new_idx[i])
 			{
-				new_j[flag]    = perm[edges[row].second];
+				new_j[flag]    = perm[edges_2[row]];
 				new_data[flag] = matrix_data[row];
 				row++;
 				flag ++;
@@ -115,26 +114,6 @@ int RCM( fsls_CSRMatrix *A, fsls_XVector *f, fsls_XVector *u, int nt )
 		fsls_CSRMatrixData(A) = new_data;
 		fsls_XVectorData(f) = new_f;
 		fsls_XVectorData(u) = new_u;
-//		row = 0, j = 0;
-//		for (i = 0; i < nnz; ++i)
-//		{
-//			if (i==new_i[row+1])
-//				row = row+1;
-//			col = new_j[i];
-//			{
-//				new_edges[j].first  = row;
-//				new_edges[j].second = col;
-//				j++;
-//			}
-//		}
-//		Graph new_G(ngrid);
-//		for (i = 0; i < nnz; ++i)
-//		{
-//			add_edge(new_edges[i].first, new_edges[i].second, new_G);
-//		}
-
-//		std::cout << "new original bandwidth: " << bandwidth(new_G) << std::endl;
-
 		std::cout << "new(RCM) bandwidth: " 
 			<< bandwidth(G, make_iterator_property_map(&perm[0], index_map, perm[0]))
 			<< std::endl;
