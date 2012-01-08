@@ -1331,3 +1331,78 @@ int fsls_dtMatrix(double dt, int n_rows, int n_cols, double *A_full)
 	}
 	return ierr;
 }
+int fsls_COOMatrixPrint( fsls_CSRMatrix *matrix, char *file_name )
+{
+	int ierr = 0;
+
+	FILE    *fp;
+
+	double  *matrix_data;
+	int     *matrix_i;
+	int     *matrix_j;
+	int      num_rows;
+	int      num_cols;
+	int      nnz, row = 0, col = 0, i;
+	double   data;
+
+	/*----------------------------------------------
+	 * Print the matrix data
+	 *---------------------------------------------*/
+
+	matrix_data = fsls_CSRMatrixData(matrix);
+	matrix_i    = fsls_CSRMatrixI(matrix);
+	matrix_j    = fsls_CSRMatrixJ(matrix);
+	num_rows    = fsls_CSRMatrixNumRows(matrix);
+	num_cols    = fsls_CSRMatrixNumCols(matrix);
+	nnz				  = fsls_CSRMatrixNumNonzeros(matrix);
+
+	fp = fopen(file_name, "w");
+
+	fprintf(fp, "%d          ", num_rows);
+	fprintf(fp, "%d          ", num_cols);
+	fprintf(fp, "%d\n", nnz);
+
+	for (i = 0; i < nnz; ++i)
+	{
+		if (i==matrix_i[row+1])
+			row = row+1;
+		col = matrix_j[i];
+		data = matrix_data[i];
+		fprintf(fp, "%d          %d          %.15le\n", row, col, data);
+	}
+	fclose(fp);
+
+	return ierr;
+}
+
+int fsls_MatrixSPGnuplot( fsls_CSRMatrix *matrix, char *file_name )
+{
+	int ierr = 0;
+
+	FILE    *fp;
+
+	int     *matrix_i;
+	int     *matrix_j;
+	int      nnz, row = 0, col = 0, i;
+
+	/*----------------------------------------------
+	 * Print the matrix data
+	 *---------------------------------------------*/
+
+	matrix_i    = fsls_CSRMatrixI(matrix);
+	matrix_j    = fsls_CSRMatrixJ(matrix);
+	nnz				  = fsls_CSRMatrixNumNonzeros(matrix);
+
+	fp = fopen(file_name, "w");
+
+	for (i = 0; i < nnz; ++i)
+	{
+		if (i==matrix_i[row+1])
+			row = row+1;
+		col = matrix_j[i];
+		fprintf(fp, "%d   %d\n", col, -row);
+	}
+	fclose(fp);
+
+	return ierr;
+}

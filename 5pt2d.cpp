@@ -39,6 +39,7 @@ main( int argc, char *argv[])
 	char *MatFile = NULL;
 	char *RhsFile = NULL;
 	char *SolFile = NULL;
+	char *SPFile = NULL;
 	char filename[120];
 
 	fsls_BandMatrix *A    = NULL;
@@ -52,6 +53,7 @@ main( int argc, char *argv[])
 	int test = 0;
 	int rcm = 0;
 	char* order = "normal";
+	char* op = "csr";
 
 	nx = 11;
 	ny = 11;
@@ -94,6 +96,13 @@ main( int argc, char *argv[])
 		}
 		if (arg_index >= argc) break;
 
+		if ( strcmp(argv[arg_index], "-op") == 0 )
+		{
+			arg_index ++;
+			op = argv[arg_index++];
+		}
+		if (arg_index >= argc) break;
+
 		if ( strcmp(argv[arg_index], "-help") == 0 )
 		{
 			print_usage = 1;
@@ -109,6 +118,7 @@ main( int argc, char *argv[])
 		printf("  -nt    <val> : number of interier nodes in t-direction [default:  0]\n");
 		printf("  -test  <val> : 1->lapack routine test for fdm;0->no test for fdm[default:  0]\n");
 		printf("  -order <val> : rcm->RCM ordering for the d.o.f;\n		 rb->Red-Black ordering for the d.o.f;[default:  normal]\n");
+		printf("  -op <val>    : csr->CSR format for the output matrix;\n		 coo->COO format for the output matrix;[default:  CSR]\n");
 		printf("  -help        : using help message\n\n");
 		exit(1);
 	}
@@ -125,6 +135,7 @@ main( int argc, char *argv[])
 	MatFile = "./mat_";
 	RhsFile = "./rhs_";
 	SolFile = "./sol_";
+	SPFile  = "./sp_";
 
 	/*-----------------------------------------------------
 	 * construct a linear system
@@ -141,10 +152,8 @@ main( int argc, char *argv[])
 		printf("\n >>> total time: %.3f seconds\n\n",mytime(tStart,tEnd));
 	}
 
-	sprintf(filename, "%s%dX%d.dat",MatFile,nx,ny);
 	fsls_Band2CSRMatrix(A, &Acsr);
 	if (rcm)
-//		RCM( Acsr, b, u );
 		RCM( Acsr, b, u, nt );
 
 	/**
@@ -216,7 +225,19 @@ main( int argc, char *argv[])
 		}
 	}
 
-	fsls_CSRMatrixPrint(Acsr,filename);
+	if ( strcmp(op,"csr") == 0 )
+	{
+		sprintf(filename, "%scsr_%dX%d.dat",MatFile,nx,ny);
+		fsls_CSRMatrixPrint(Acsr,filename);
+	}
+	if ( strcmp(op,"coo") == 0 )
+	{
+		sprintf(filename, "%scoo_%dX%d.dat",MatFile,nx,ny);
+		fsls_COOMatrixPrint(Acsr,filename);
+	}
+
+	sprintf(filename, "%s%dX%d_%s.dat",SPFile,nx,ny,order);
+	fsls_MatrixSPGnuplot( Acsr, filename );
 
 	sprintf(filename, "%s%dX%d.dat",RhsFile,nx,ny);
 	fsls_XVectorPrint(b, filename);

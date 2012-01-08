@@ -154,6 +154,21 @@ fsls_BuildLinearSystem_7pt3d( int               nt,
 
 int fsls_Band2CSRMatrix( fsls_BandMatrix *B, fsls_CSRMatrix **A_ptr );
 int fsls_CSRMatrixPrint( fsls_CSRMatrix *matrix, char *file_name );
+
+/**
+ * @brief output the matrix with coo format
+ *
+ *  newly added 2012/01/08 by feiteng
+ */
+int fsls_COOMatrixPrint( fsls_CSRMatrix *matrix, char *file_name );
+
+/**
+ * @brief output the sparsity pattern of the matrix with gnuplot format
+ *
+ *  newly added 2012/01/08 by feiteng
+ */
+int fsls_MatrixSPGnuplot( fsls_CSRMatrix *matrix, char *file_name );
+
 fsls_CSRMatrix *fsls_CSRMatrixCreate( int num_rows,int num_cols,int num_nonzeros );
 int fsls_CSRMatrixInitialize( fsls_CSRMatrix *matrix );
 int fsls_CSRMatrixDestroy( fsls_CSRMatrix *matrix );
